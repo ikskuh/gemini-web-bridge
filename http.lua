@@ -21,55 +21,65 @@ local function translate_gemini(source, printer)
 		end
 	end
 
-	for line in source:gmatch("[^\n]*") do
-		local f3 = line:sub(1,3)
+	local start = 1
+	local _end = 1
 
-		if pre then
+	while _end < #source do
+		if source:sub(_end, _end) == "\n" then
+			local line = source:sub(start, _end - 1)
+			start = _end + 1
 
-			if f3 == "```" then
-				pre = false
-				printer("</pre>\n")
-			else
-				printer(line .. "\n")
-				-- printer("<br />\n")
-			end
+			local f3 = line:sub(1,3)
 
-		else
-			if f3 == "```" then
-				closeList()
-				pre = true
-				printer("<pre>")
-			elseif f3 == "###" then
-				closeList()
-				printer("<h3>" .. line:sub(4) .. "</h3>\n")
-			elseif f3:sub(1,2) == "##" then
-				closeList()
-				printer("<h2>" .. line:sub(3) .. "</h2>\n")
-			elseif f3:sub(1,1) == "#" then
-				closeList()
-				printer("<h1>" .. line:sub(2) .. "</h1>\n")
-			elseif f3:sub(1,2) == "=>" then
-				closeList()
-				local link, rest = line:match("=> *([^ ]+) *(.*)")
+			if pre then
 
-				if rest == "" or rest == nil then
-					printer("<a href=\"", link, "\">", link, "</a><br />\n")
+				if f3 == "```" then
+					pre = false
+					printer("</pre>\n")
 				else
-					printer("<a href=\"", link, "\">", rest, "</a><br />\n")
+					printer(line .. "\n")
+					-- printer("<br />\n")
 				end
-			elseif f3:sub(1,1) == "*" then
-				if not in_list then
-					printer("<ul>\n")
-				end
-				in_list = true
-				printer("<li>" .. line:sub(2) .. "</li>\n")
-				
+
 			else
-				closeList()
-				printer(line)
-				printer("<br />\n")
+				if f3 == "```" then
+					closeList()
+					pre = true
+					printer("<pre>")
+				elseif f3 == "###" then
+					closeList()
+					printer("<h3>" .. line:sub(4) .. "</h3>\n")
+				elseif f3:sub(1,2) == "##" then
+					closeList()
+					printer("<h2>" .. line:sub(3) .. "</h2>\n")
+				elseif f3:sub(1,1) == "#" then
+					closeList()
+					printer("<h1>" .. line:sub(2) .. "</h1>\n")
+				elseif f3:sub(1,2) == "=>" then
+					closeList()
+					local link, rest = line:match("=> *([^ ]+) *(.*)")
+
+					if rest == "" or rest == nil then
+						printer("<a href=\"", link, "\">", link, "</a><br />\n")
+					else
+						printer("<a href=\"", link, "\">", rest, "</a><br />\n")
+					end
+				elseif f3:sub(1,1) == "*" then
+					if not in_list then
+						printer("<ul>\n")
+					end
+					in_list = true
+					printer("<li>" .. line:sub(2) .. "</li>\n")
+					
+				else
+					closeList()
+					printer(line)
+					printer("<br />\n")
+				end
 			end
+
 		end
+		_end = _end + 1
 
 	end
 
