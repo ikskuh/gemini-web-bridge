@@ -21,7 +21,7 @@ local function translate_gemini(source, printer)
 		end
 	end
 
-	for line in source:gmatch("([^\n]+)") do
+	for line in source:gsub("\r", ""):gmatch("[^\n]*") do
 		local f3 = line:sub(1,3)
 
 		if pre then
